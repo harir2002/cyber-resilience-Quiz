@@ -1,0 +1,359 @@
+{
+  "file_name": "Cyber Resilience Maturity Assessment.xlsx",
+  "sheets": [
+    {
+      "name": "Assessment Questionnaire",
+      "rows": 16,
+      "columns": 4,
+      "column_names": [
+        "CYBER RESILIENCE MATURITY ASSESSMENT",
+        "Unnamed: 1",
+        "Unnamed: 2",
+        "Unnamed: 3"
+      ],
+      "sample_data": [
+        {
+          "CYBER RESILIENCE MATURITY ASSESSMENT": "Initial Meeting Questionnaire",
+          "Unnamed: 1": "",
+          "Unnamed: 2": "",
+          "Unnamed: 3": ""
+        },
+        {
+          "CYBER RESILIENCE MATURITY ASSESSMENT": "",
+          "Unnamed: 1": "",
+          "Unnamed: 2": "",
+          "Unnamed: 3": ""
+        },
+        {
+          "CYBER RESILIENCE MATURITY ASSESSMENT": "Question #",
+          "Unnamed: 1": "Strategic Question",
+          "Unnamed: 2": "Response Type",
+          "Unnamed: 3": "Scoring Notes"
+        },
+        {
+          "CYBER RESILIENCE MATURITY ASSESSMENT": "",
+          "Unnamed: 1": "",
+          "Unnamed: 2": "",
+          "Unnamed: 3": ""
+        },
+        {
+          "CYBER RESILIENCE MATURITY ASSESSMENT": "1",
+          "Unnamed: 1": "What is the current maximum recovery time your organization can tolerate without material business impact (RTO)?",
+          "Unnamed: 2": "Single Select",
+          "Unnamed: 3": "L1: Days/Weeks | L2: Days | L3: 12-24 hrs | L4: Hours | L5: Minutes"
+        },
+        {
+          "CYBER RESILIENCE MATURITY ASSESSMENT": "2",
+          "Unnamed: 1": "How are your backup systems currently protected from unauthorized access, modification, or deletion by attackers?",
+          "Unnamed: 2": "Single Select",
+          "Unnamed: 3": "L1: Network isolation only | L2: Role-based controls | L3: Immutability + Air-gap | L4: Immutability + Multi-layer | L5: Zero-trust immutable"
+        },
+        {
+          "CYBER RESILIENCE MATURITY ASSESSMENT": "3",
+          "Unnamed: 1": "In the past 12 months, how many unplanned data recovery scenarios has your organization tested end-to-end?",
+          "Unnamed: 2": "Single Select",
+          "Unnamed: 3": "L1: None | L2: 1 drill | L3: 2-3 drills | L4: Quarterly + documented | L5: Continuous automated validation"
+        },
+        {
+          "CYBER RESILIENCE MATURITY ASSESSMENT": "4",
+          "Unnamed: 1": "When a potential cyber incident is detected today, how is the incident response coordinated and executed?",
+          "Unnamed: 2": "Single Select",
+          "Unnamed: 3": "L1: Manual ad-hoc process | L2: Documented playbook only | L3: Playbook + assigned roles | L4: Playbook + monitoring alerts | L5: Automated orchestrated response"
+        },
+        {
+          "CYBER RESILIENCE MATURITY ASSESSMENT": "5",
+          "Unnamed: 1": "How is your organization currently detecting signs of compromise BEFORE data loss actually occurs?",
+          "Unnamed: 2": "Single Select",
+          "Unnamed: 3": "L1: Logs reviewed post-incident | L2: Basic alerting on backups | L3: Threat-aware monitoring | L4: Deception sensors + anomaly | L5: AI-driven predictive detection"
+        },
+        {
+          "CYBER RESILIENCE MATURITY ASSESSMENT": "6",
+          "Unnamed: 1": "What percentage of your critical data assets are covered under your current recovery capability?",
+          "Unnamed: 2": "Single Select",
+          "Unnamed: 3": "L1: 40-60% | L2: 60-75% | L3: 75-85% | L4: 85-95% | L5: 95-100% + validated"
+        },
+        {
+          "CYBER RESILIENCE MATURITY ASSESSMENT": "7",
+          "Unnamed: 1": "If you were to recover your entire organization's data today, how confident are you in the integrity and completeness?",
+          "Unnamed: 2": "Confidence Scale",
+          "Unnamed: 3": "L1: 30-40% | L2: 40-60% | L3: 60-75% | L4: 75-90% | L5: 90-100%"
+        },
+        {
+          "CYBER RESILIENCE MATURITY ASSESSMENT": "8",
+          "Unnamed: 1": "Which critical systems or data sources do NOT have a tested, documented recovery procedure?",
+          "Unnamed: 2": "Open Response",
+          "Unnamed: 3": "Scoring: Number of systems without coverage indicates maturity gap"
+        },
+        {
+          "CYBER RESILIENCE MATURITY ASSESSMENT": "9",
+          "Unnamed: 1": "In your current setup, how much time would it take to isolate a compromised system and recover to a known-clean state?",
+          "Unnamed: 2": "Single Select",
+          "Unnamed: 3": "L1: 1-2 weeks | L2: 3-7 days | L3: 24-48 hours | L4: 4-12 hours | L5: Under 1 hour automated"
+        },
+        {
+          "CYBER RESILIENCE MATURITY ASSESSMENT": "10",
+          "Unnamed: 1": "How are recovery validations and post-incident metrics tracked and reported to leadership?",
+          "Unnamed: 2": "Single Select",
+          "Unnamed: 3": "L1: Not tracked | L2: Manual post-mortems | L3: Recovery reports | L4: Automated dashboards | L5: Real-time exec scorecard"
+        },
+        {
+          "CYBER RESILIENCE MATURITY ASSESSMENT": "11",
+          "Unnamed: 1": "What level of investment has been made in backup infrastructure over the past 24 months?",
+          "Unnamed: 2": "Single Select",
+          "Unnamed: 3": "L1: Minimal/legacy | L2: Basic upgrades | L3: Moderate modernization | L4: Significant investment | L5: Enterprise-grade cloud-native"
+        },
+        {
+          "CYBER RESILIENCE MATURITY ASSESSMENT": "12",
+          "Unnamed: 1": "If ransomware locked all your systems today, could your organization recover independently without paying ransom?",
+          "Unnamed: 2": "Single Select",
+          "Unnamed: 3": "L1: Uncertain | L2: Possibly with manual effort | L3: Yes, with 48+ hours | L4: Yes, within hours | L5: Yes, verified automated recovery"
+        }
+      ]
+    },
+    {
+      "name": "Scoring Guide",
+      "rows": 69,
+      "columns": 3,
+      "column_names": [
+        "SCORING GUIDE",
+        "Unnamed: 1",
+        "Unnamed: 2"
+      ],
+      "sample_data": [
+        {
+          "SCORING GUIDE": "",
+          "Unnamed: 1": "",
+          "Unnamed: 2": ""
+        },
+        {
+          "SCORING GUIDE": "Question",
+          "Unnamed: 1": "Level 1: Basic",
+          "Unnamed: 2": "Scoring Rule"
+        },
+        {
+          "SCORING GUIDE": "1 - RTO",
+          "Unnamed: 1": "Days/Weeks",
+          "Unnamed: 2": "0 Points"
+        },
+        {
+          "SCORING GUIDE": "1 - RTO",
+          "Unnamed: 1": "Days",
+          "Unnamed: 2": "1 Point"
+        },
+        {
+          "SCORING GUIDE": "1 - RTO",
+          "Unnamed: 1": "12-24 hours",
+          "Unnamed: 2": "2 Points"
+        },
+        {
+          "SCORING GUIDE": "1 - RTO",
+          "Unnamed: 1": "Hours",
+          "Unnamed: 2": "3 Points"
+        },
+        {
+          "SCORING GUIDE": "1 - RTO",
+          "Unnamed: 1": "Minutes",
+          "Unnamed: 2": "4 Points"
+        },
+        {
+          "SCORING GUIDE": "",
+          "Unnamed: 1": "",
+          "Unnamed: 2": ""
+        },
+        {
+          "SCORING GUIDE": "2 - Backup Protection",
+          "Unnamed: 1": "Network isolation only",
+          "Unnamed: 2": "0 Points"
+        },
+        {
+          "SCORING GUIDE": "2 - Backup Protection",
+          "Unnamed: 1": "Role-based controls",
+          "Unnamed: 2": "1 Point"
+        },
+        {
+          "SCORING GUIDE": "2 - Backup Protection",
+          "Unnamed: 1": "Immutability + Air-gap",
+          "Unnamed: 2": "2 Points"
+        },
+        {
+          "SCORING GUIDE": "2 - Backup Protection",
+          "Unnamed: 1": "Immutability + Multi-layer",
+          "Unnamed: 2": "3 Points"
+        },
+        {
+          "SCORING GUIDE": "2 - Backup Protection",
+          "Unnamed: 1": "Zero-trust immutable",
+          "Unnamed: 2": "4 Points"
+        },
+        {
+          "SCORING GUIDE": "",
+          "Unnamed: 1": "",
+          "Unnamed: 2": ""
+        },
+        {
+          "SCORING GUIDE": "3 - Recovery Testing",
+          "Unnamed: 1": "",
+          "Unnamed: 2": "0 Points"
+        },
+        {
+          "SCORING GUIDE": "3 - Recovery Testing",
+          "Unnamed: 1": "1 drill in past 12mo",
+          "Unnamed: 2": "1 Point"
+        },
+        {
+          "SCORING GUIDE": "3 - Recovery Testing",
+          "Unnamed: 1": "2-3 drills",
+          "Unnamed: 2": "2 Points"
+        },
+        {
+          "SCORING GUIDE": "3 - Recovery Testing",
+          "Unnamed: 1": "Quarterly + documented",
+          "Unnamed: 2": "3 Points"
+        },
+        {
+          "SCORING GUIDE": "3 - Recovery Testing",
+          "Unnamed: 1": "Continuous automated",
+          "Unnamed: 2": "4 Points"
+        },
+        {
+          "SCORING GUIDE": "",
+          "Unnamed: 1": "",
+          "Unnamed: 2": ""
+        }
+      ]
+    },
+    {
+      "name": "Scorecard Template",
+      "rows": 62,
+      "columns": 4,
+      "column_names": [
+        "CYBER RESILIENCE MATURITY SCORECARD",
+        "Unnamed: 1",
+        "Unnamed: 2",
+        "Unnamed: 3"
+      ],
+      "sample_data": [
+        {
+          "CYBER RESILIENCE MATURITY SCORECARD": "Organization Name:",
+          "Unnamed: 1": "[Client Name]",
+          "Unnamed: 2": "Assessment Date:",
+          "Unnamed: 3": "[Date]"
+        },
+        {
+          "CYBER RESILIENCE MATURITY SCORECARD": "CISO/CIO:",
+          "Unnamed: 1": "[Name]",
+          "Unnamed: 2": "Facility:",
+          "Unnamed: 3": "[Location]"
+        },
+        {
+          "CYBER RESILIENCE MATURITY SCORECARD": "",
+          "Unnamed: 1": "",
+          "Unnamed: 2": "",
+          "Unnamed: 3": ""
+        },
+        {
+          "CYBER RESILIENCE MATURITY SCORECARD": "ASSESSMENT RESULTS",
+          "Unnamed: 1": "",
+          "Unnamed: 2": "",
+          "Unnamed: 3": ""
+        },
+        {
+          "CYBER RESILIENCE MATURITY SCORECARD": "",
+          "Unnamed: 1": "",
+          "Unnamed: 2": "",
+          "Unnamed: 3": ""
+        },
+        {
+          "CYBER RESILIENCE MATURITY SCORECARD": "Question #",
+          "Unnamed: 1": "Domain",
+          "Unnamed: 2": "Score (0-4)",
+          "Unnamed: 3": "Maturity Level Indicated"
+        },
+        {
+          "CYBER RESILIENCE MATURITY SCORECARD": "1",
+          "Unnamed: 1": "Recovery Time Objective",
+          "Unnamed: 2": 4,
+          "Unnamed: 3": ""
+        },
+        {
+          "CYBER RESILIENCE MATURITY SCORECARD": "2",
+          "Unnamed: 1": "Data Protection & Immutability",
+          "Unnamed: 2": 3,
+          "Unnamed: 3": ""
+        },
+        {
+          "CYBER RESILIENCE MATURITY SCORECARD": "3",
+          "Unnamed: 1": "Recovery Testing & Validation",
+          "Unnamed: 2": 2,
+          "Unnamed: 3": ""
+        },
+        {
+          "CYBER RESILIENCE MATURITY SCORECARD": "4",
+          "Unnamed: 1": "Incident Response Orchestration",
+          "Unnamed: 2": 4,
+          "Unnamed: 3": ""
+        },
+        {
+          "CYBER RESILIENCE MATURITY SCORECARD": "5",
+          "Unnamed: 1": "Threat Detection Capability",
+          "Unnamed: 2": 1,
+          "Unnamed: 3": ""
+        },
+        {
+          "CYBER RESILIENCE MATURITY SCORECARD": "6",
+          "Unnamed: 1": "Critical Asset Coverage",
+          "Unnamed: 2": 3,
+          "Unnamed: 3": ""
+        },
+        {
+          "CYBER RESILIENCE MATURITY SCORECARD": "7",
+          "Unnamed: 1": "Recovery Confidence",
+          "Unnamed: 2": 2,
+          "Unnamed: 3": ""
+        },
+        {
+          "CYBER RESILIENCE MATURITY SCORECARD": "8",
+          "Unnamed: 1": "System Coverage Gaps",
+          "Unnamed: 2": 4,
+          "Unnamed: 3": ""
+        },
+        {
+          "CYBER RESILIENCE MATURITY SCORECARD": "9",
+          "Unnamed: 1": "Recovery Speed",
+          "Unnamed: 2": 4,
+          "Unnamed: 3": ""
+        },
+        {
+          "CYBER RESILIENCE MATURITY SCORECARD": "10",
+          "Unnamed: 1": "Metrics & Reporting",
+          "Unnamed: 2": 2,
+          "Unnamed: 3": ""
+        },
+        {
+          "CYBER RESILIENCE MATURITY SCORECARD": "11",
+          "Unnamed: 1": "Infrastructure Investment",
+          "Unnamed: 2": 2,
+          "Unnamed: 3": ""
+        },
+        {
+          "CYBER RESILIENCE MATURITY SCORECARD": "12",
+          "Unnamed: 1": "Ransomware Resilience",
+          "Unnamed: 2": 1,
+          "Unnamed: 3": ""
+        },
+        {
+          "CYBER RESILIENCE MATURITY SCORECARD": "",
+          "Unnamed: 1": "",
+          "Unnamed: 2": 32,
+          "Unnamed: 3": ""
+        },
+        {
+          "CYBER RESILIENCE MATURITY SCORECARD": "AGGREGATE SCORE SUMMARY",
+          "Unnamed: 1": "",
+          "Unnamed: 2": "",
+          "Unnamed: 3": ""
+        }
+      ]
+    }
+  ]
+}
