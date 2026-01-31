@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from '../config';
 
 const QuestionnairePage = ({ config, assessmentData, setAssessmentData }) => {
     const navigate = useNavigate();
@@ -11,9 +12,9 @@ const QuestionnairePage = ({ config, assessmentData, setAssessmentData }) => {
     // Fetch questionnaire schema from backend
     useEffect(() => {
         console.log('=== QUESTIONNAIRE PAGE LOADED ===');
-        console.log('Fetching from: http://localhost:8000/api/questionnaire/schema');
+        console.log(`Fetching from: ${API_BASE_URL}/api/questionnaire/schema`);
 
-        fetch('http://localhost:8000/api/questionnaire/schema')
+        fetch(`${API_BASE_URL}/api/questionnaire/schema`)
             .then(res => {
                 console.log('Response received, status:', res.status);
                 if (!res.ok) {
@@ -82,7 +83,7 @@ const QuestionnairePage = ({ config, assessmentData, setAssessmentData }) => {
                     <h3>Troubleshooting:</h3>
                     <ul style={{ textAlign: 'left', lineHeight: '1.8' }}>
                         <li>Check if backend is running: <code>python main.py</code></li>
-                        <li>Test API: <a href="http://localhost:8000/api/questionnaire/schema" target="_blank" style={{ color: '#e7000b' }}>http://localhost:8000/api/questionnaire/schema</a></li>
+                        <li>Test API: <a href={`${API_BASE_URL}/api/questionnaire/schema`} target="_blank" style={{ color: '#e7000b' }}>{`${API_BASE_URL}/api/questionnaire/schema`}</a></li>
                         <li>Check browser console (F12) for errors</li>
                     </ul>
                 </div>

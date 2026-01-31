@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from '../config';
 
 const ReviewPage = ({ config, assessmentData, setAssessmentData }) => {
     const navigate = useNavigate();
@@ -18,7 +19,7 @@ const ReviewPage = ({ config, assessmentData, setAssessmentData }) => {
                 responses: assessmentData.responses || {}
             };
 
-            const response = await fetch('http://localhost:8000/api/assessment/submit', {
+            const response = await fetch(`${API_BASE_URL}/api/assessment/submit`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

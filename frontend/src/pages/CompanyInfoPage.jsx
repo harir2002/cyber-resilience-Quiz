@@ -1,43 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from '../config';
 
 const CompanyInfoPage = ({ config, assessmentData, setAssessmentData }) => {
-    const navigate = useNavigate();
-    const [formData, setFormData] = useState({
-        company_name: '',
-        industry: '',
-        company_size: '',
-        region: '',
-        contact_email: '',
-        contact_name: '',
-        additional_notes: ''
-    });
-
-    const [errors, setErrors] = useState({});
-
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-        // Clear error when user types
-        if (errors[name]) {
-            setErrors(prev => ({ ...prev, [name]: '' }));
-        }
-    };
-
-    const validateForm = () => {
-        const newErrors = {};
-        if (!formData.company_name.trim()) newErrors.company_name = 'Company name is required';
-        if (!formData.industry) newErrors.industry = 'Industry is required';
-        if (!formData.company_size) newErrors.company_size = 'Company size is required';
-        if (!formData.region) newErrors.region = 'Region is required';
-        if (!formData.contact_email.trim()) {
-            newErrors.contact_email = 'Email is required';
-        } else if (!/\S+@\S+\.\S+/.test(formData.contact_email)) {
-            newErrors.contact_email = 'Invalid email format';
-        }
-        return newErrors;
-    };
-
+    // ... existing initialization code ...
     const handleSubmit = async (e) => {
         e.preventDefault();
         const newErrors = validateForm();
@@ -49,7 +15,7 @@ const CompanyInfoPage = ({ config, assessmentData, setAssessmentData }) => {
 
         try {
             // Call backend API to create company
-            const response = await fetch('http://localhost:8000/api/company/create', {
+            const response = await fetch(`${API_BASE_URL}/api/company/create`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)

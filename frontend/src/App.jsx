@@ -2,6 +2,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import './index.css';
 
+import { API_BASE_URL } from './config';
+
 // Import pages (we'll create these)
 import LandingPage from './pages/LandingPage';
 import CompanyInfoPage from './pages/CompanyInfoPage';
@@ -19,7 +21,7 @@ function App() {
 
   // Fetch application config from API
   useEffect(() => {
-    fetch('http://localhost:8000/api/config')
+    fetch(`${API_BASE_URL}/api/config`)
       .then(res => res.json())
       .then(data => setConfig(data))
       .catch(err => console.error('Error loading config:', err));
@@ -38,47 +40,47 @@ function App() {
     <Router>
       <div className="App">
         <Routes>
-          <Route 
-            path="/" 
-            element={<LandingPage config={config} />} 
+          <Route
+            path="/"
+            element={<LandingPage config={config} />}
           />
-          <Route 
-            path="/company-info" 
+          <Route
+            path="/company-info"
             element={
-              <CompanyInfoPage 
-                config={config} 
-                assessmentData={assessmentData}
-                setAssessmentData={setAssessmentData}
-              />
-            } 
-          />
-          <Route 
-            path="/questionnaire" 
-            element={
-              <QuestionnairePage 
+              <CompanyInfoPage
                 config={config}
                 assessmentData={assessmentData}
                 setAssessmentData={setAssessmentData}
               />
-            } 
+            }
           />
-          <Route 
-            path="/review" 
+          <Route
+            path="/questionnaire"
             element={
-              <ReviewPage 
+              <QuestionnairePage
+                config={config}
+                assessmentData={assessmentData}
+                setAssessmentData={setAssessmentData}
+              />
+            }
+          />
+          <Route
+            path="/review"
+            element={
+              <ReviewPage
                 config={config}
                 assessmentData={assessmentData}
               />
-            } 
+            }
           />
-          <Route 
-            path="/results" 
+          <Route
+            path="/results"
             element={
-              <ResultsPage 
+              <ResultsPage
                 config={config}
                 assessmentData={assessmentData}
               />
-            } 
+            }
           />
         </Routes>
       </div>
