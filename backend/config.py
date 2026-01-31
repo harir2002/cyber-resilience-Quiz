@@ -34,7 +34,7 @@ COLORS = {
 # PATHS
 # ==============================
 BASE_DIR = Path(__file__).parent
-DATA_DIR = BASE_DIR / "data"
+DATA_DIR = Path(os.getenv("DATA_DIR", BASE_DIR / "data"))
 CHROMADB_PATH = DATA_DIR / "chromadb"
 ASSETS_DIR = BASE_DIR / "assets"
 LOGO_PATH = ASSETS_DIR / "sba_logo.png"
