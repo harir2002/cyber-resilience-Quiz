@@ -11,9 +11,14 @@ from datetime import datetime
 from contextlib import asynccontextmanager
 import sys
 from pathlib import Path
+import os
 
 # Add parent directory to path
 sys.path.append(str(Path(__file__).parent.parent))
+
+# Disable ChromaDB Telemetry
+os.environ["ANONYMIZED_TELEMETRY"] = "False"
+os.environ["CHROMA_SERVER_NO_INTERACTIVE_AUTH"] = "True"
 
 from database.chromadb_manager import ChromaDBManager
 from questionnaire.questionnaire_schema import get_questionnaire_schema, get_question_count
@@ -121,7 +126,7 @@ class AssessmentSubmit(BaseModel):
 # API ENDPOINTS
 # ========================================
 
-@app.get("/")
+@app.api_route("/", methods=["GET", "HEAD"])
 async def root():
     """API health check"""
     return {
