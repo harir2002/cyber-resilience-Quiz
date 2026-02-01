@@ -3,7 +3,46 @@ import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../config';
 
 const CompanyInfoPage = ({ config, assessmentData, setAssessmentData }) => {
-    // ... existing initialization code ...
+    const navigate = useNavigate();
+    const [formData, setFormData] = useState({
+        company_name: '',
+        industry: '',
+        company_size: '',
+        region: '',
+        contact_email: '',
+        contact_name: '',
+        additional_notes: ''
+    });
+    const [errors, setErrors] = useState({});
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+        // Clear error when user types
+        if (errors[name]) {
+            setErrors(prev => ({
+                ...prev,
+                [name]: null
+            }));
+        }
+    };
+
+    const validateForm = () => {
+        const newErrors = {};
+        if (!formData.company_name.trim()) newErrors.company_name = 'Company Name is required';
+        if (!formData.industry) newErrors.industry = 'Industry is required';
+        if (!formData.company_size) newErrors.company_size = 'Company Size is required';
+        if (!formData.region) newErrors.region = 'Region is required';
+        if (!formData.contact_email.trim()) {
+            newErrors.contact_email = 'Contact Email is required';
+        } else if (!/\S+@\S+\.\S+/.test(formData.contact_email)) {
+            newErrors.contact_email = 'Invalid email format';
+        }
+        return newErrors;
+    };
     const handleSubmit = async (e) => {
         e.preventDefault();
         const newErrors = validateForm();
