@@ -82,7 +82,8 @@ def send_assessment_email(to_email, company_name, results):
     html_content = generate_email_html(company_name, results)
 
     # 2. Check for SendGrid API Key (Priority 1)
-    SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
+    # Check both standard naming and the user's specific naming 'Sendgrid_API'
+    SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY") or os.getenv("Sendgrid_API")
     # Also support RESEND_API_KEY just in case user didn't switch
     RESEND_API_KEY = os.getenv("Resend_API")
     
