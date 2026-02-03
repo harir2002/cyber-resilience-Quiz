@@ -86,27 +86,35 @@ def send_assessment_email(to_email, company_name, results):
     
     if RESEND_API_KEY:
         try:
-            import resend
-            resend.api_key = RESEND_API_KEY
+            import requests
             
-            logger.info("Sending email using Resend API...")
+            logger.info("Sending email using Resend API (Direct HTTP)...")
             
-            # Send via Resend
-            # Note: For free tier, usually you can only send to your own email unless domain is verified.
-            from_email = "onboarding@resend.dev"
-            
-            r = resend.Emails.send({
-                "from": from_email,
-                "to": to_email,
+            url = "https://api.resend.com/emails"
+            payload = {
+                "from": "onboarding@resend.dev",
+                "to": [to_email],
                 "subject": subject,
                 "html": html_content
-            })
+            }
+            headers = {
+                "Authorization": f"Bearer {RESEND_API_KEY}",
+                "Content-Type": "application/json"
+            }
             
-            logger.info(f"Email sent successfully via Resend: {r}")
-            return True, "Email sent successfully via Resend"
+            response = requests.post(url, json=payload, headers=headers)
+            
+            if response.status_code in [200, 201, 202]:
+                logger.info(f"Email sent successfully via Resend: {response.json()}")
+                return True, "Email sent successfully via Resend"
+            else:
+                error_msg = f"Resend API Error {response.status_code}: {response.text}"
+                logger.error(error_msg)
+                return False, error_msg
+                
         except Exception as e:
-            logger.error(f"Resend API failed: {str(e)}")
-            return False, f"Resend API Error: {str(e)}"
+            logger.error(f"Resend HTTP request failed: {str(e)}")
+            return False, f"Resend Error: {str(e)}"
 
     # 3. Fallback to SMTP
     # Use environment variables for credentials

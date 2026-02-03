@@ -8,3 +8,4 @@ python-multipart==0.0.6
 posthog<3.0.0
 python-dotenv
 resend==1.0.1
+requests
