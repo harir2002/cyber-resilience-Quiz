@@ -75,9 +75,13 @@ def generate_email_html(company_name, results):
 
 def send_assessment_email(to_email, company_name, results):
     """
-    Sends the assessment report via email using SBA Info Solutions SMTP
+    Sends the assessment report via email using SBA Info Solutions SMTP or Resend API
     """
-    # Check for Resend API Key first
+    # 1. Generate Content First (fix for 'subject not defined' error)
+    subject = f"Assessment Summary - {company_name}"
+    html_content = generate_email_html(company_name, results)
+
+    # 2. Check for Resend API Key
     RESEND_API_KEY = os.getenv("Resend_API")
     
     if RESEND_API_KEY:
@@ -88,10 +92,7 @@ def send_assessment_email(to_email, company_name, results):
             logger.info("Sending email using Resend API...")
             
             # Send via Resend
-            # Note: 'from' must be a verified domain or the testing 'onboarding@resend.dev'
-            # For free tier, usually you can only send to your own email unless domain is verified.
-            # We will try using the onboarding address if no custom domain.
-            
+            # Note: For free tier, usually you can only send to your own email unless domain is verified.
             from_email = "onboarding@resend.dev"
             
             r = resend.Emails.send({
@@ -105,11 +106,10 @@ def send_assessment_email(to_email, company_name, results):
             return True, "Email sent successfully via Resend"
         except Exception as e:
             logger.error(f"Resend API failed: {str(e)}")
-            # Fallback to SMTP or return error?
-            # Let's return error to avoid confusion
             return False, f"Resend API Error: {str(e)}"
 
-    # Fallback to SMTP
+    # 3. Fallback to SMTP
+    # Use environment variables for credentials
     SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.gmail.com")
     SMTP_PORT = int(os.getenv("SMTP_PORT", 587))
     SMTP_USER = os.getenv("EMAIL_USER", "")
