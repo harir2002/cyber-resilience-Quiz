@@ -98,9 +98,18 @@ def send_assessment_email(to_email, company_name, results):
     
     try:
         logger.info(f"Connecting to SMTP server: {SMTP_SERVER}:{SMTP_PORT}")
-        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
-        # server.set_debuglevel(1) # Uncomment for detailed debug output
-        server.starttls()
+        
+        # Use simple timeout to fail fast if blocked
+        timeout = 20 # seconds
+
+        if SMTP_PORT == 465:
+            # SSL Connection
+            server = smtplib.SMTP_SSL(SMTP_SERVER, SMTP_PORT, timeout=timeout)
+        else:
+            # TLS Connection
+            server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT, timeout=timeout)
+            server.starttls()
+            
         server.login(SMTP_USER, SMTP_PASS)
         text = msg.as_string()
         server.sendmail(SMTP_USER, to_email, text)
