@@ -374,16 +374,21 @@ class EmailRequest(BaseModel):
 from fastapi import BackgroundTasks
 
 @app.post("/api/assessment/send-email")
-async def send_report_email(request: EmailRequest, background_tasks: BackgroundTasks):
-    """Send assessment report via email (queued in background)"""
-    # Simply queue the task; don't wait for it
-    background_tasks.add_task(
-        send_assessment_email,
-        request.email,
-        request.company_name,
-        request.results
-    )
-    return {"success": True, "message": "Report queued for sending"}
+async def send_report_email(request: EmailRequest):
+    """Send assessment report via email"""
+    try:
+        success, message = send_assessment_email(
+            request.email,
+            request.company_name,
+            request.results
+        )
+        
+        if not success:
+            raise HTTPException(status_code=500, detail=f"Failed to send email: {message}")
+            
+        return {"success": True, "message": "Report sent to email"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
 
