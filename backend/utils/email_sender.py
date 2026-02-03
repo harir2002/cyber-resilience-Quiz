@@ -81,15 +81,60 @@ def send_assessment_email(to_email, company_name, results):
     subject = f"Assessment Summary - {company_name}"
     html_content = generate_email_html(company_name, results)
 
-    # 2. Check for Resend API Key
+    # 2. Check for SendGrid API Key (Priority 1)
+    SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
+    # Also support RESEND_API_KEY just in case user didn't switch
     RESEND_API_KEY = os.getenv("Resend_API")
     
-    if RESEND_API_KEY:
+    if SENDGRID_API_KEY:
         try:
             import requests
+            logger.info("Sending email using SendGrid API...")
             
-            logger.info("Sending email using Resend API (Direct HTTP)...")
+            url = "https://api.sendgrid.com/v3/mail/send"
             
+            # SendGrid requires a verified sender identity
+            verified_sender = "sbacyberressilence@gmail.com" 
+            
+            payload = {
+                "personalizations": [{
+                    "to": [{"email": to_email}],
+                    "subject": subject
+                }],
+                "from": {
+                    "email": verified_sender,
+                    "name": "SBA Info Solutions"
+                },
+                "content": [{
+                    "type": "text/html",
+                    "value": html_content
+                }]
+            }
+            
+            headers = {
+                "Authorization": f"Bearer {SENDGRID_API_KEY}",
+                "Content-Type": "application/json"
+            }
+            
+            response = requests.post(url, json=payload, headers=headers)
+            
+            if response.status_code in [200, 201, 202]:
+                logger.info(f"Email sent successfully via SendGrid.")
+                return True, "Email sent successfully via SendGrid"
+            else:
+                error_msg = f"SendGrid API Error {response.status_code}: {response.text}"
+                logger.error(error_msg)
+                return False, error_msg
+                
+        except Exception as e:
+            logger.error(f"SendGrid Request failed: {str(e)}")
+            return False, f"SendGrid Error: {str(e)}"
+
+    # 3. Check for Resend (Priority 2 - Legacy/Backup)
+    elif RESEND_API_KEY:
+        try:
+            import requests
+            logger.info("Sending email using Resend API...")
             url = "https://api.resend.com/emails"
             payload = {
                 "from": "onboarding@resend.dev",
@@ -101,22 +146,15 @@ def send_assessment_email(to_email, company_name, results):
                 "Authorization": f"Bearer {RESEND_API_KEY}",
                 "Content-Type": "application/json"
             }
-            
             response = requests.post(url, json=payload, headers=headers)
-            
             if response.status_code in [200, 201, 202]:
-                logger.info(f"Email sent successfully via Resend: {response.json()}")
-                return True, "Email sent successfully via Resend"
+                return True, "Email sent via Resend"
             else:
-                error_msg = f"Resend API Error {response.status_code}: {response.text}"
-                logger.error(error_msg)
-                return False, error_msg
-                
-        except Exception as e:
-            logger.error(f"Resend HTTP request failed: {str(e)}")
-            return False, f"Resend Error: {str(e)}"
+                return False, f"Resend Error: {response.text}"
+        except Exception:
+            pass
 
-    # 3. Fallback to SMTP
+    # 4. Fallback to SMTP
     # Use environment variables for credentials
     SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.gmail.com")
     SMTP_PORT = int(os.getenv("SMTP_PORT", 587))
@@ -124,7 +162,7 @@ def send_assessment_email(to_email, company_name, results):
     SMTP_PASS = os.getenv("EMAIL_PASS", "")
     
     if not SMTP_USER or not SMTP_PASS:
-        logger.error("EMAIL_USER/PASS or Resend_API not set.")
+        logger.error("No valid email configuration found (SendGrid, Resend, or SMTP).")
         return False, "Configuration error: No email credentials found."
 
     msg = MIMEMultipart()
