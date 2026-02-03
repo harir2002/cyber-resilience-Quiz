@@ -46,6 +46,8 @@ const CompanyInfoPage = ({ config, assessmentData, setAssessmentData }) => {
         return newErrors;
     };
 
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         const newErrors = validateForm();
@@ -54,6 +56,8 @@ const CompanyInfoPage = ({ config, assessmentData, setAssessmentData }) => {
             setErrors(newErrors);
             return;
         }
+
+        setIsSubmitting(true);
 
         try {
             // Call backend API to create company
@@ -72,10 +76,14 @@ const CompanyInfoPage = ({ config, assessmentData, setAssessmentData }) => {
                     responses: {}
                 });
                 navigate('/questionnaire');
+            } else {
+                alert('Server returned an error: ' + (data.message || 'Unknown error'));
             }
         } catch (error) {
             console.error('Error creating company:', error);
             alert('Error starting assessment. Please try again.');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -102,6 +110,7 @@ const CompanyInfoPage = ({ config, assessmentData, setAssessmentData }) => {
                             value={formData.contact_name}
                             onChange={handleChange}
                             placeholder="Your Name"
+                            disabled={isSubmitting}
                         />
                         {errors.contact_name && <div className="text-error mt-1">{errors.contact_name}</div>}
                     </div>
@@ -118,6 +127,7 @@ const CompanyInfoPage = ({ config, assessmentData, setAssessmentData }) => {
                             value={formData.contact_email}
                             onChange={handleChange}
                             placeholder="name@company.com"
+                            disabled={isSubmitting}
                         />
                         {errors.contact_email && <div className="text-error mt-1">{errors.contact_email}</div>}
                     </div>
@@ -134,6 +144,7 @@ const CompanyInfoPage = ({ config, assessmentData, setAssessmentData }) => {
                             value={formData.designation}
                             onChange={handleChange}
                             placeholder="Your Designation (e.g. CISO, IT Manager)"
+                            disabled={isSubmitting}
                         />
                         {errors.designation && <div className="text-error mt-1">{errors.designation}</div>}
                     </div>
@@ -150,6 +161,7 @@ const CompanyInfoPage = ({ config, assessmentData, setAssessmentData }) => {
                             value={formData.company_name}
                             onChange={handleChange}
                             placeholder="Enter your company name"
+                            disabled={isSubmitting}
                         />
                         {errors.company_name && <div className="text-error mt-1">{errors.company_name}</div>}
                     </div>
@@ -166,15 +178,36 @@ const CompanyInfoPage = ({ config, assessmentData, setAssessmentData }) => {
                             value={formData.current_backup_solution}
                             onChange={handleChange}
                             placeholder="e.g. Veeam, Commvault, Rubrik..."
+                            disabled={isSubmitting}
                         />
                     </div>
 
                     <div className="d-flex gap-2">
-                        <button type="button" className="btn btn-outline" onClick={() => navigate('/')}>
+                        <button
+                            type="button"
+                            className="btn btn-outline"
+                            onClick={() => navigate('/')}
+                            disabled={isSubmitting}
+                        >
                             ← Back
                         </button>
-                        <button type="submit" className="btn">
-                            Continue to Assessment →
+                        <button
+                            type="submit"
+                            className="btn"
+                            disabled={isSubmitting}
+                            style={{
+                                cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                                opacity: isSubmitting ? 0.7 : 1,
+                                minWidth: '200px'
+                            }}
+                        >
+                            {isSubmitting ? (
+                                <span style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
+                                    <span>⏳</span> Starting...
+                                </span>
+                            ) : (
+                                'Continue to Assessment →'
+                            )}
                         </button>
                     </div>
                 </form>
