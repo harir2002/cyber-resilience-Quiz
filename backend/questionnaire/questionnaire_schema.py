@@ -39,7 +39,7 @@ def get_questionnaire_schema():
             {
                         "question_id": "q1b",
                         "domain": "Cyber Resilience",
-                        "question_text": "What is the point in time that the organisation can withstand without business loss (RPO) ?",
+                        "question_text": "What is the data point in time that the organisation can withstand without business productivity loss (RPO) ?",
                         "question_type": "single_select",
                         "options": [
                                     "0 hrs",
@@ -237,7 +237,7 @@ def get_questionnaire_schema():
             {
                         "question_id": "q7f",
                         "domain": "Cyber Resilience",
-                        "question_text": "For the above to maintain your minimal viable services to bring back your business online, what would be the current timeline",
+                        "question_text": "For the above, to maintain your minimal viable services to bring back your business online, what would be the current timeline",
                         "question_type": "single_select",
                         "options": [
                                     "1-2 weeks",
