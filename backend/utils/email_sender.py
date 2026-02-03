@@ -77,19 +77,48 @@ def send_assessment_email(to_email, company_name, results):
     """
     Sends the assessment report via email using SBA Info Solutions SMTP
     """
-    # Use environment variables for credentials
-    SMTP_SERVER = os.getenv("SMTP_SERVER", "mail.sbainfo.in")
+    # Check for Resend API Key first
+    RESEND_API_KEY = os.getenv("Resend_API")
+    
+    if RESEND_API_KEY:
+        try:
+            import resend
+            resend.api_key = RESEND_API_KEY
+            
+            logger.info("Sending email using Resend API...")
+            
+            # Send via Resend
+            # Note: 'from' must be a verified domain or the testing 'onboarding@resend.dev'
+            # For free tier, usually you can only send to your own email unless domain is verified.
+            # We will try using the onboarding address if no custom domain.
+            
+            from_email = "onboarding@resend.dev"
+            
+            r = resend.Emails.send({
+                "from": from_email,
+                "to": to_email,
+                "subject": subject,
+                "html": html_content
+            })
+            
+            logger.info(f"Email sent successfully via Resend: {r}")
+            return True, "Email sent successfully via Resend"
+        except Exception as e:
+            logger.error(f"Resend API failed: {str(e)}")
+            # Fallback to SMTP or return error?
+            # Let's return error to avoid confusion
+            return False, f"Resend API Error: {str(e)}"
+
+    # Fallback to SMTP
+    SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.gmail.com")
     SMTP_PORT = int(os.getenv("SMTP_PORT", 587))
     SMTP_USER = os.getenv("EMAIL_USER", "")
     SMTP_PASS = os.getenv("EMAIL_PASS", "")
     
     if not SMTP_USER or not SMTP_PASS:
-        logger.error("EMAIL_USER or EMAIL_PASS not set in environment variables.")
-        return False, "Server configuration error: Missing email credentials."
+        logger.error("EMAIL_USER/PASS or Resend_API not set.")
+        return False, "Configuration error: No email credentials found."
 
-    subject = f"Assessment Summary - {company_name}"
-    html_content = generate_email_html(company_name, results)
-    
     msg = MIMEMultipart()
     msg['From'] = SMTP_USER
     msg['To'] = to_email
