@@ -1,6 +1,6 @@
 """
 Scoring and Analytics Module
-Calculates cyber resilience maturity scores based on the 12-question assessment
+Calculates cyber resilience maturity scores based on the questionnaire
 Matches the specific Scorecard format and logic provided
 """
 
@@ -16,12 +16,12 @@ from questionnaire.questionnaire_schema import get_questionnaire_schema, get_max
 class ResilienceScorer:
     """
     Calculates cyber resilience scores and provides insights
-    Based on 12 Strategic Questions (0-4 points each)
+    Based on Strategic Questions (0-4 points each)
     """
     
     def __init__(self):
         self.questionnaire = get_questionnaire_schema()
-        self.max_score = get_max_score() # Should be 48
+        self.max_score = get_max_score()
     
     def calculate_score(self, responses: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -33,17 +33,13 @@ class ResilienceScorer:
         
         Returns:
             Dictionary containing:
-            - total_score (0-48)
+            - total_score
             - average_score (0-4.0)
             - maturity_level (1-5)
             - maturity_label (BASIC, etc.)
             - next_steps
             - question_details (list of question scores)
         """
-        
-        # 1. Normalize responses needed if they come in different structures
-        # We assume responses is like { "q1_rto": "Days/Weeks", ... }
-        # If it's nested { "Section": { "q1": ... } }, we assume caller flattens or checks
         
         total_score = 0
         question_details = []
@@ -75,20 +71,38 @@ class ResilienceScorer:
                     points = 1 
             
             elif q.get("scoring"):
-                points = q["scoring"].get(user_answer, 0)
+                if isinstance(user_answer, list):
+                    # Multi-select: take the max score of selected options
+                    option_scores = [q["scoring"].get(ans, 0) for ans in user_answer]
+                    points = max(option_scores) if option_scores else 0
+                else:
+                    points = q["scoring"].get(user_answer, 0)
             
             total_score += points
+            
+            # Calculate max points for this specific question for normalization
+            q_max = 4
+            if q.get("scoring"):
+                scores = list(q["scoring"].values())
+                if scores:
+                    q_max = max(scores)
             
             question_details.append({
                 "question_id": q_id,
                 "domain": q["domain"],
+                "question_text": q["question_text"],
                 "score": points,
-                "max_points": 4,
+                "user_answer": user_answer,  # Include the actual answer
+                "max_points": q_max,
                 "maturity_indicated": self._points_to_maturity_level_single(points)
             })
             
         # Calculate Average (0-4.0)
-        avg_score = total_score / 12 if len(all_questions) > 0 else 0
+        # Normalize: (Total Score / Max Score) * 4
+        if self.max_score > 0:
+            avg_score = (total_score / self.max_score) * 4
+        else:
+            avg_score = 0
         
         # Determine Aggregate Maturity Level
         maturity_info = self._get_maturity_level_info(total_score)
@@ -131,37 +145,42 @@ class ResilienceScorer:
         return points + 1
 
     def _get_maturity_level_info(self, total_score: int) -> Dict:
-        """Map total score (0-48) to Maturity Level Info based on scorecard rules"""
+        """Map total score to Maturity Level Info based on percentage of max score"""
         
-        if total_score <= 12:
+        if self.max_score == 0:
+             return {"level": 0, "label": "N/A", "characteristics": "", "next_step": ""}
+             
+        percent = (total_score / self.max_score) * 100
+        
+        if percent <= 25:
             return {
                 "level": 1,
                 "label": "BASIC",
                 "characteristics": "Traditional backup; manual recovery; days/weeks RTO",
                 "next_step": "Activate immutability & air-gapping"
             }
-        elif total_score <= 24:
+        elif percent <= 50:
             return {
                 "level": 2,
                 "label": "RISK-INFORMED",
                 "characteristics": "Backup hardening; reactive response; aware of threats",
                 "next_step": "Establish recovery playbooks & testing"
             }
-        elif total_score <= 36:
+        elif percent <= 75:
             return {
                 "level": 3,
                 "label": "REPEATABLE",
                 "characteristics": "Air-gapped; documented playbooks; 24-48hr recovery",
                 "next_step": "Deploy detection & monitoring capabilities"
             }
-        elif total_score <= 44:
+        elif percent <= 90:
             return {
                 "level": 4,
                 "label": "MANAGED",
                 "characteristics": "Proactive detection; anomaly alerts; hours-level recovery",
                 "next_step": "Automate orchestration & clean-room setup"
             }
-        else: # 45-48
+        else: # 91-100
             return {
                 "level": 5,
                 "label": "ADAPTIVE",
@@ -170,14 +189,16 @@ class ResilienceScorer:
             }
 
     def _calculate_gap(self, current_score: int) -> Dict:
-        """Calculate gap against an ideal target (Level 5 = 48 points)"""
-        target_score = 48 # Assuming aiming for max
+        """Calculate gap against an ideal target (Level 5 = Max points)"""
+        target_score = self.max_score
         gap = target_score - current_score
         
-        # Estimate effort based on gap size
-        if gap <= 5:
+        # Estimate effort based on gap size (percentage based)
+        gap_percent = (gap / target_score) * 100 if target_score > 0 else 0
+        
+        if gap_percent <= 10:
             effort = "Low - Tuning required"
-        elif gap <= 15:
+        elif gap_percent <= 30:
             effort = "Medium - Dedicated project required"
         else:
             effort = "High - Strategic transformation required"

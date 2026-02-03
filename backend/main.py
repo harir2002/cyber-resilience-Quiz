@@ -6,12 +6,16 @@ Main application entry point
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Union
 from datetime import datetime
 from contextlib import asynccontextmanager
 import sys
 from pathlib import Path
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Add parent directory to path
 sys.path.append(str(Path(__file__).parent.parent))
@@ -98,11 +102,15 @@ app.add_middleware(
 
 class CompanyInfo(BaseModel):
     company_name: str
-    industry: str
-    company_size: str
-    region: str
     contact_email: EmailStr
     contact_name: Optional[str] = ""
+    designation: Optional[str] = ""
+    current_backup_solution: Optional[str] = ""
+    
+    # Deprecated/Hidden fields (made optional)
+    industry: Optional[str] = ""
+    company_size: Optional[str] = ""
+    state: Optional[str] = ""
     additional_notes: Optional[str] = ""
 
 class QuestionResponse(BaseModel):
@@ -110,7 +118,7 @@ class QuestionResponse(BaseModel):
     section: str
     question_text: str
     question_type: str
-    answer: str
+    answer: Union[str, List[str]]
     comment: Optional[str] = ""
 
 class Assessment(BaseModel):
@@ -173,26 +181,43 @@ async def get_config():
             "Education",
             "Other"
         ],
-        "regions": [
-            "India",
-            "United States",
-            "United Kingdom",
-            "Canada",
-            "Australia",
-            "Singapore",
-            "United Arab Emirates",
-            "Germany",
-            "France",
-            "Japan",
-            "China",
-            "South Korea",
-            "Brazil",
-            "South Africa",
-            "Other - Asia Pacific",
-            "Other - Europe",
-            "Other - Middle East",
-            "Other - Americas",
-            "Other - Africa"
+        "states": [
+            "Andhra Pradesh",
+            "Arunachal Pradesh",
+            "Assam",
+            "Bihar",
+            "Chhattisgarh",
+            "Goa",
+            "Gujarat",
+            "Haryana",
+            "Himachal Pradesh",
+            "Jharkhand",
+            "Karnataka",
+            "Kerala",
+            "Madhya Pradesh",
+            "Maharashtra",
+            "Manipur",
+            "Meghalaya",
+            "Mizoram",
+            "Nagaland",
+            "Odisha",
+            "Punjab",
+            "Rajasthan",
+            "Sikkim",
+            "Tamil Nadu",
+            "Telangana",
+            "Tripura",
+            "Uttar Pradesh",
+            "Uttarakhand",
+            "West Bengal",
+            "Andaman and Nicobar Islands",
+            "Chandigarh",
+            "Dadra and Nagar Haveli and Daman and Diu",
+            "Delhi",
+            "Jammu and Kashmir",
+            "Ladakh",
+            "Lakshadweep",
+            "Puducherry"
         ]
     }
 
@@ -338,6 +363,32 @@ async def get_statistics():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+# Import email sender
+from utils.email_sender import send_assessment_email
+
+class EmailRequest(BaseModel):
+    email: EmailStr
+    company_name: str
+    results: Dict
+
+@app.post("/api/assessment/send-email")
+async def send_report_email(request: EmailRequest):
+    """Send assessment report via email"""
+    try:
+        success, message = send_assessment_email(
+            request.email,
+            request.company_name,
+            request.results
+        )
+        
+        if not success:
+            raise HTTPException(status_code=500, detail=f"Failed to send email: {message}")
+            
+        return {"success": True, "message": "Report sent to email"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 if __name__ == "__main__":
+
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

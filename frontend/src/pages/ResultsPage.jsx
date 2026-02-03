@@ -1,45 +1,39 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from '../config';
 
 const ResultsPage = () => {
     const location = useLocation();
     const navigate = useNavigate();
+
+    // 1. ALL HOOKS MUST BE AT THE TOP LEVEL
     const [results, setResults] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // In a real app, we might fetch results from backend ID passing via location state
-    // For now, let's look for "assessmentData" or "results" in location.state 
-    // OR we simulate the calculation if we have the raw responses.
+    // Email specific hooks
+    const [email, setEmail] = useState('');
+    const [sending, setSending] = useState(false);
+    const [emailStatus, setEmailStatus] = useState(null);
 
+    // Effect for loading results
     useEffect(() => {
-        // If we have results passed directly (e.g. from ReviewPage submission)
         if (location.state?.results) {
             setResults(location.state.results);
             setLoading(false);
         } else {
-            // Redirect or show error if no data
-            // For demo purposes, if no data, we might want to redirect back
-            // console.log("No results found in state");
+            console.warn("No results found in navigation state");
             setLoading(false);
         }
     }, [location.state]);
 
-    if (loading) return <div className="p-10 text-white">Generating Scorecard...</div>;
+    // Effect for pre-filling email
+    useEffect(() => {
+        if (location.state?.companyInfo?.contact_email) {
+            setEmail(location.state.companyInfo.contact_email);
+        }
+    }, [location.state]);
 
-    if (!results) {
-        return (
-            <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-4">
-                <h2 className="text-xl text-red-500 mb-4">No Assessment Results Found</h2>
-                <button onClick={() => navigate('/')} className="px-4 py-2 border border-red-500 rounded text-red-500 hover:bg-red-500 hover:text-white transition">
-                    Start New Assessment
-                </button>
-            </div>
-        )
-    }
-
-    const { total_score, average_score, maturity_label, characteristics, recommended_next_step, question_scores, gap_analysis } = results;
-
-    // Styles
+    // Styles - Defined at the top to be available for all returns
     const pageStyle = {
         minHeight: '100vh',
         backgroundColor: '#000',
@@ -96,6 +90,97 @@ const ResultsPage = () => {
 
     const cellCenter = { ...tdStyle, textAlign: 'center' };
 
+    // 2. NOW WE CAN DO CONDITIONAL RENDERING (Early Returns)
+    if (loading) return (
+        <div style={pageStyle}>
+            <div style={{ ...containerStyle, alignItems: 'center', justifyContent: 'center', minHeight: '80vh' }}>
+                <div className="spinner"></div>
+                <p style={{ marginTop: '20px' }}>Generating Scorecard...</p>
+            </div>
+        </div>
+    );
+
+    if (!results) {
+        return (
+            <div style={pageStyle}>
+                <div style={{ ...containerStyle, alignItems: 'center', justifyContent: 'center', minHeight: '80vh' }}>
+                    <h2 style={{ color: '#e7000b', marginBottom: '20px' }}>No Assessment Results Found</h2>
+                    <p style={{ marginBottom: '30px', opacity: 0.8 }}>It looks like you haven't completed an assessment yet, or the data was lost.</p>
+                    <button
+                        onClick={() => navigate('/')}
+                        style={{
+                            padding: '12px 24px',
+                            background: 'transparent',
+                            border: '1px solid #e7000b',
+                            color: '#e7000b',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontWeight: 'bold'
+                        }}
+                    >
+                        Start New Assessment
+                    </button>
+                </div>
+            </div>
+        )
+    }
+
+    const safeResults = results || {};
+
+    const total_score = safeResults.total_score || 0;
+    const average_score = safeResults.average_score || 0;
+    const maturity_label = safeResults.maturity_label || "N/A";
+    const characteristics = safeResults.characteristics || "Not available";
+    const recommended_next_step = safeResults.recommended_next_step || "Contact administrator";
+    const question_scores = safeResults.question_scores || [];
+    const maturity_level = safeResults.maturity_level || 0;
+
+    const max_score = safeResults.max_score || 44;
+
+    // Safety check for gap_analysis specifically
+    const gap_analysis = safeResults.gap_analysis || {
+        gap_points: 0,
+        estimated_effort: "N/A"
+    };
+
+    console.log("Rendering Results with:", safeResults);
+
+    // Styles were here previously, but are now moved to the top.
+
+
+
+    const handleSendEmail = async () => {
+        if (!email) return;
+        setSending(true);
+        setEmailStatus(null);
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/assessment/send-email`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: email,
+                    company_name: location.state?.companyInfo?.company_name || "Client",
+                    results: results
+                })
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                setEmailStatus('success');
+                alert('Report sent successfully!');
+            } else {
+                throw new Error(data.detail || 'Failed to send');
+            }
+        } catch (err) {
+            console.error(err);
+            setEmailStatus('error');
+            alert('Failed to send email: ' + err.message);
+        } finally {
+            setSending(false);
+        }
+    };
+
     return (
         <div style={pageStyle}>
             <div style={containerStyle}>
@@ -107,178 +192,122 @@ const ResultsPage = () => {
                         <img src="/sba_logo.png" alt="SBA Info Solutions" style={{ height: '60px', objectFit: 'contain' }} />
 
                         <div>
-                            <h1 style={{ fontSize: '2rem', fontWeight: 'bold', margin: '0 0 5px 0', color: '#e7000b', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                                Cyber Resilience Maturity Scorecard
+                            <h1 style={{ fontSize: '1.8rem', fontWeight: 'bold', margin: '0 0 5px 0', color: '#e7000b', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                Assessment Summary
                             </h1>
-                            <p style={{ opacity: 0.7, margin: 0, fontSize: '1rem', letterSpacing: '2px', fontWeight: 'bold' }}>
+                            <p style={{ opacity: 0.7, margin: 0, fontSize: '0.9rem', fontWeight: 'bold' }}>
                                 POWERED BY SBA INFO SOLUTIONS
                             </p>
                         </div>
                     </div>
 
                     <div style={{ textAlign: 'right', fontSize: '0.9rem', opacity: 0.8 }}>
-                        <p style={{ margin: '2px 0' }}><strong>Client Organization:</strong> {location.state?.companyInfo?.company_name || "Demo Corp"}</p>
-                        <p style={{ margin: '2px 0' }}><strong>Assessment Date:</strong> {new Date().toLocaleDateString()}</p>
+                        <p style={{ margin: '2px 0' }}><strong>Client:</strong> {location.state?.companyInfo?.company_name || "Unknown"}</p>
+                        <p style={{ margin: '2px 0' }}><strong>Date:</strong> {new Date().toLocaleDateString()}</p>
                     </div>
                 </div>
 
-                {/* 1. ASSESSMENT RESULTS TABLE */}
+                {/* QUESTIONS & ANSWERS LIST */}
                 <section>
-                    <h2 style={sectionHeaderStyle}>1. Assessment Results</h2>
-                    <table style={tableStyle}>
-                        <thead>
-                            <tr>
-                                <th style={{ ...thStyle, width: '50px', textAlign: 'center' }}>#</th>
-                                <th style={thStyle}>Domain</th>
-                                <th style={{ ...thStyle, width: '100px', textAlign: 'center' }}>Score (0-4)</th>
-                                <th style={{ ...thStyle, width: '200px', textAlign: 'center' }}>Maturity Level</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {question_scores.map((q, idx) => (
-                                <tr key={q.question_id} style={{ background: idx % 2 === 0 ? '#000' : '#111' }}>
-                                    <td style={{ ...cellCenter, color: '#888' }}>{idx + 1}</td>
-                                    <td style={tdStyle}>{q.domain}</td>
-                                    <td style={{ ...cellCenter, fontWeight: 'bold', color: q.score >= 3 ? '#4caf50' : q.score >= 2 ? '#ffeb3b' : '#ff5252' }}>
-                                        {q.score}
-                                    </td>
-                                    <td style={cellCenter}>Level {q.maturity_indicated}</td>
-                                </tr>
-                            ))}
-                            {/* Total Row */}
-                            <tr style={{ background: '#222', borderTop: '2px solid #555' }}>
-                                <td colSpan={2} style={{ ...tdStyle, textAlign: 'right', fontWeight: 'bold' }}>TOTAL SCORE</td>
-                                <td style={{ ...cellCenter, fontSize: '1.2rem', color: '#e7000b', fontWeight: 'bold' }}>{total_score}</td>
-                                <td style={tdStyle}></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </section>
+                    <h2 style={{ borderLeft: '4px solid #e7000b', paddingLeft: '15px', color: '#fff', marginBottom: '20px' }}>
+                        Your Responses
+                    </h2>
 
-                {/* 2. AGGREGATE SCORE SUMMARY */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px' }}>
-                    <section>
-                        <h2 style={sectionHeaderStyle}>2. Aggregate Score Summary</h2>
-                        <table style={tableStyle}>
-                            <tbody>
-                                <tr>
-                                    <td style={{ ...tdStyle, background: '#1a1a1a', width: '60%' }}>Total Points Achieved</td>
-                                    <td style={{ ...tdStyle, fontSize: '1.1rem', fontWeight: 'bold' }}>{total_score} <span style={{ fontSize: '0.8rem', color: '#888', fontWeight: 'normal' }}>/ 48</span></td>
-                                </tr>
-                                <tr>
-                                    <td style={{ ...tdStyle, background: '#1a1a1a' }}>Average Maturity Score</td>
-                                    <td style={{ ...tdStyle, fontSize: '1.1rem', fontWeight: 'bold' }}>{average_score} <span style={{ fontSize: '0.8rem', color: '#888', fontWeight: 'normal' }}>/ 4.0</span></td>
-                                </tr>
-                                <tr>
-                                    <td style={{ ...tdStyle, background: '#1a1a1a' }}>Current Maturity Level</td>
-                                    <td style={{ ...tdStyle, fontSize: '1.1rem', fontWeight: 'bold', color: '#e7000b', textTransform: 'uppercase' }}>{maturity_label}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </section>
+                    <div style={{ display: 'grid', gap: '20px' }}>
+                        {question_scores.map((q, idx) => {
+                            if (!q) return null;
 
-                    <section>
-                        <h2 style={sectionHeaderStyle}>Gap Analysis</h2>
-                        <table style={tableStyle}>
-                            <tbody>
-                                <tr>
-                                    <td style={{ ...tdStyle, background: '#1a1a1a', width: '60%' }}>Target Level (Adaptive)</td>
-                                    <td style={tdStyle}>48 Points</td>
-                                </tr>
-                                <tr>
-                                    <td style={{ ...tdStyle, background: '#1a1a1a' }}>Gap (Points)</td>
-                                    <td style={{ ...tdStyle, color: '#ff5252', fontWeight: 'bold' }}>{gap_analysis.gap_points} Pts</td>
-                                </tr>
-                                <tr>
-                                    <td style={{ ...tdStyle, background: '#1a1a1a' }}>Estimated Effort</td>
-                                    <td style={tdStyle}>{gap_analysis.estimated_effort}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </section>
-                </div>
+                            // Visualize answers: check if array (multi-select) or string
+                            const answerDisplay = Array.isArray(q.user_answer)
+                                ? q.user_answer.join(', ')
+                                : (q.user_answer || 'No answer provided');
 
-                {/* 3. MATURITY LEVEL INDICATION */}
-                <section>
-                    <h2 style={sectionHeaderStyle}>3. Maturity Level Assessment</h2>
-                    <div style={{ background: '#111', border: '1px solid #333', padding: '30px', borderRadius: '8px', display: 'flex', gap: '40px', alignItems: 'center' }}>
-                        <div style={{ textAlign: 'center', minWidth: '200px' }}>
-                            <div style={{ fontSize: '0.8rem', color: '#888', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '10px' }}>Current Status</div>
-                            <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#e7000b', marginBottom: '10px' }}>{maturity_label}</div>
-                            <div style={{ fontSize: '0.8rem', background: '#222', padding: '5px 15px', borderRadius: '4px', display: 'inline-block' }}>Level {results.maturity_level}</div>
-                        </div>
-
-                        <div style={{ borderLeft: '1px solid #333', paddingLeft: '40px', flex: 1 }}>
-                            <div style={{ marginBottom: '20px' }}>
-                                <span style={{ color: '#ff8a80', fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Key Characteristics:</span>
-                                <p style={{ color: '#ccc', margin: 0, lineHeight: 1.5 }}>{characteristics}</p>
-                            </div>
-                            <div>
-                                <span style={{ color: '#69f0ae', fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>Recommended Next Step:</span>
-                                <div style={{ background: 'rgba(0, 255, 0, 0.1)', border: '1px solid rgba(0, 255, 0, 0.3)', padding: '10px', borderRadius: '4px', color: '#fff' }}>
-                                    {recommended_next_step}
+                            return (
+                                <div key={idx} style={{ background: '#1a1a1a', padding: '20px', borderRadius: '8px', border: '1px solid #333' }}>
+                                    <div style={{ display: 'flex', gap: '15px' }}>
+                                        <div style={{
+                                            background: '#e7000b', color: 'white', fontWeight: 'bold',
+                                            width: '30px', height: '30px', borderRadius: '50%',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            flexShrink: 0
+                                        }}>
+                                            {idx + 1}
+                                        </div>
+                                        <div style={{ flex: 1 }}>
+                                            <h3 style={{ margin: '0 0 10px 0', fontSize: '1.1rem', color: '#ddd' }}>
+                                                {q.question_text}
+                                            </h3>
+                                            <div style={{
+                                                background: '#000', padding: '15px', borderRadius: '6px',
+                                                borderLeft: '3px solid #4CAF50', color: '#fff', fontWeight: '500',
+                                                whiteSpace: 'pre-wrap'
+                                            }}>
+                                                {answerDisplay}
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                {/* 4. INVESTMENT ROADMAP (Preview) */}
-                <section>
-                    <h2 style={sectionHeaderStyle}>4. Strategic Roadmap Preview</h2>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
-                        {/* Phase 1 */}
-                        <div style={{ background: '#111', padding: '20px', borderRadius: '8px', borderTop: '3px solid #448aff' }}>
-                            <h3 style={{ color: '#448aff', marginTop: 0 }}>Phase 1: Quick Wins</h3>
-                            <div style={{ fontSize: '0.8rem', color: '#888', marginBottom: '15px' }}>0-30 Days</div>
-                            <ul style={{ paddingLeft: '20px', margin: 0, color: '#ccc', lineHeight: 1.6 }}>
-                                <li>Implement Immutable Backups</li>
-                                <li>Audit Privileged Access</li>
-                                <li>Activate MFA Everywhere</li>
-                            </ul>
-                        </div>
-
-                        {/* Phase 2 */}
-                        <div style={{ background: '#111', padding: '20px', borderRadius: '8px', borderTop: '3px solid #ffeb3b' }}>
-                            <h3 style={{ color: '#ffeb3b', marginTop: 0 }}>Phase 2: Hardening</h3>
-                            <div style={{ fontSize: '0.8rem', color: '#888', marginBottom: '15px' }}>30-60 Days</div>
-                            <ul style={{ paddingLeft: '20px', margin: 0, color: '#ccc', lineHeight: 1.6 }}>
-                                <li>Deploy Threat Detection</li>
-                                <li>Air-Gap Critical Assets</li>
-                                <li>Conduct Tabletop Exercise</li>
-                            </ul>
-                        </div>
-
-                        {/* Phase 3 */}
-                        <div style={{ background: '#111', padding: '20px', borderRadius: '8px', borderTop: '3px solid #00e676' }}>
-                            <h3 style={{ color: '#00e676', marginTop: 0 }}>Phase 3: Strategic</h3>
-                            <div style={{ fontSize: '0.8rem', color: '#888', marginBottom: '15px' }}>60-90 Days</div>
-                            <ul style={{ paddingLeft: '20px', margin: 0, color: '#ccc', lineHeight: 1.6 }}>
-                                <li>Automate Recovery Runbooks</li>
-                                <li>AI-Driven Resilience</li>
-                                <li>Continuous Validation</li>
-                            </ul>
-                        </div>
+                            );
+                        })}
                     </div>
                 </section>
 
                 {/* ACTIONS */}
-                <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', paddingTop: '40px', borderTop: '1px solid #333' }}>
+                <div className="no-print" style={{ background: '#111', padding: '20px', marginTop: '20px', borderRadius: '8px', border: '1px solid #333' }}>
+                    <h3 style={{ marginTop: 0, color: 'white', fontSize: '1.2rem', marginBottom: '15px' }}>📩 Email Report</h3>
+                    <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                        <input
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            placeholder="Email address for report"
+                            style={{ padding: '12px', borderRadius: '4px', border: '1px solid #444', background: '#222', color: 'white', flex: 1 }}
+                        />
+                        <button
+                            onClick={handleSendEmail}
+                            disabled={sending}
+                            style={{
+                                padding: '12px 24px',
+                                background: sending ? '#666' : '#e7000b',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: sending ? 'not-allowed' : 'pointer',
+                                fontWeight: 'bold'
+                            }}
+                        >
+                            {sending ? 'Sending...' : 'Send to Email 📧'}
+                        </button>
+                    </div>
+                </div>
+
+                <div className="no-print" style={{ display: 'flex', justifyContent: 'center', gap: '20px', paddingTop: '20px' }}>
                     <button
                         onClick={() => window.print()}
-                        style={{ padding: '15px 30px', background: '#222', border: '1px solid #444', color: 'white', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}
+                        style={{ padding: '12px 25px', background: '#222', border: '1px solid #444', color: 'white', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}
                     >
-                        <span>🖨️</span> Print Scorecard
+                        <span>🖨️</span> Print PDF
                     </button>
                     <button
                         onClick={() => navigate('/')}
-                        style={{ padding: '15px 30px', background: '#e7000b', border: 'none', color: 'white', fontWeight: 'bold', borderRadius: '6px', cursor: 'pointer', boxShadow: '0 4px 15px rgba(231, 0, 11, 0.3)' }}
+                        style={{ padding: '12px 25px', background: '#e7000b', border: 'none', color: 'white', fontWeight: 'bold', borderRadius: '6px', cursor: 'pointer' }}
                     >
-                        Start New Assessment
+                        Start New
                     </button>
                 </div>
-
             </div>
+
+            <style>
+                {`
+                    @media print {
+                        .no-print { display: none !important; }
+                        body { background-color: #fff !important; color: #000 !important; }
+                        div[style*="background: #1a1a1a"] { background: #fff !important; border: 1px solid #ddd !important; color: #000 !important; }
+                        div[style*="background: #000"] { background: #f5f5f5 !important; color: #000 !important; border: 1px solid #ccc !important; }
+                        h3 { color: #000 !important; }
+                    }
+                `}
+            </style>
         </div>
     );
 };

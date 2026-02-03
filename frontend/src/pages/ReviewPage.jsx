@@ -50,7 +50,7 @@ const ReviewPage = ({ config, assessmentData, setAssessmentData }) => {
     };
 
     // Calculate completion status
-    const totalQuestions = 12; // Hardcoded for now based on known schema
+    const totalQuestions = 15; // Updated to match new schema
     let answeredCount = 0;
     if (assessmentData.responses) {
         Object.values(assessmentData.responses).forEach(section => {
@@ -107,7 +107,7 @@ const ReviewPage = ({ config, assessmentData, setAssessmentData }) => {
                             fontWeight: 'bold'
                         }}
                     >
-                        {submitting ? 'Generating Report...' : 'Generate Scorecard 🚀'}
+                        {submitting ? 'Generating Report...' : 'Submit Assessment 🚀'}
                     </button>
                 </div>
             </div>

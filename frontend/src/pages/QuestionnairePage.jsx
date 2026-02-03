@@ -247,36 +247,21 @@ const QuestionnairePage = ({ config, assessmentData, setAssessmentData }) => {
                                         <div style={{ flex: 1 }}>
                                             <h3 style={{ fontSize: '1.3rem', marginBottom: '8px', lineHeight: '1.4' }}>
                                                 {q.question_text}
+                                                {q.question_type === 'multi_select' && (
+                                                    <span style={{
+                                                        display: 'block',
+                                                        fontSize: '0.9rem',
+                                                        color: '#e7000b',
+                                                        marginTop: '5px',
+                                                        fontStyle: 'italic'
+                                                    }}>
+                                                        (Choose multiple options)
+                                                    </span>
+                                                )}
                                             </h3>
-                                            {q.domain && (
-                                                <div style={{
-                                                    display: 'inline-block',
-                                                    background: '#e7000b',
-                                                    color: 'white',
-                                                    padding: '4px 12px',
-                                                    borderRadius: '4px',
-                                                    fontSize: '0.85rem',
-                                                    fontWeight: 'bold'
-                                                }}>
-                                                    {q.domain}
-                                                </div>
-                                            )}
                                         </div>
                                     </div>
 
-                                    {q.help_text && (
-                                        <div style={{
-                                            background: '#2a2a2a',
-                                            padding: '12px',
-                                            borderRadius: '8px',
-                                            fontSize: '0.9rem',
-                                            opacity: 0.8,
-                                            fontStyle: 'italic',
-                                            marginTop: '10px'
-                                        }}>
-                                            💡 {q.help_text}
-                                        </div>
-                                    )}
                                 </div>
 
                                 {/* Answer Options */}
@@ -299,6 +284,55 @@ const QuestionnairePage = ({ config, assessmentData, setAssessmentData }) => {
                                                 resize: 'vertical'
                                             }}
                                         />
+                                    ) : q.question_type === 'multi_select' ? (
+                                        (q.options || []).map((option) => {
+                                            const selectedOptions = Array.isArray(currentAnswer) ? currentAnswer : [];
+                                            const isSelected = selectedOptions.includes(option);
+
+                                            return (
+                                                <label
+                                                    key={option}
+                                                    style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '15px',
+                                                        padding: '15px 20px',
+                                                        background: isSelected ? '#e7000b' : '#2a2a2a',
+                                                        border: `2px solid ${isSelected ? '#e7000b' : '#444'}`,
+                                                        borderRadius: '8px',
+                                                        cursor: 'pointer',
+                                                        transition: 'all 0.2s ease',
+                                                        fontSize: '1.05rem'
+                                                    }}
+                                                >
+                                                    <input
+                                                        type="checkbox"
+                                                        name={q.question_id}
+                                                        value={option}
+                                                        checked={isSelected}
+                                                        onChange={(e) => {
+                                                            const val = e.target.value;
+                                                            let newAnswer;
+                                                            if (e.target.checked) {
+                                                                newAnswer = [...selectedOptions, val];
+                                                            } else {
+                                                                newAnswer = selectedOptions.filter(o => o !== val);
+                                                            }
+                                                            handleAnswerChange(q.question_id, newAnswer);
+                                                        }}
+                                                        style={{
+                                                            width: '20px',
+                                                            height: '20px',
+                                                            cursor: 'pointer',
+                                                            accentColor: '#e7000b'
+                                                        }}
+                                                    />
+                                                    <span style={{ fontWeight: isSelected ? 'bold' : 'normal' }}>
+                                                        {option}
+                                                    </span>
+                                                </label>
+                                            );
+                                        })
                                     ) : (
                                         (q.options || []).map((option) => (
                                             <label
@@ -392,6 +426,34 @@ const QuestionnairePage = ({ config, assessmentData, setAssessmentData }) => {
                     <button
                         onClick={() => {
                             if (progress === 100) {
+                                // Transform flat responses to the structure expected by Backend/ReviewPage
+                                // Structure: { "Section Name": [ { question_id, answer, ... } ] }
+                                const formattedResponses = {};
+
+                                allQuestions.forEach(q => {
+                                    const answer = responses[q.question_id];
+                                    if (answer) {
+                                        if (!formattedResponses[q.sectionName]) {
+                                            formattedResponses[q.sectionName] = [];
+                                        }
+
+                                        formattedResponses[q.sectionName].push({
+                                            question_id: q.question_id,
+                                            section: q.sectionName,
+                                            question_text: q.question_text,
+                                            question_type: q.question_type,
+                                            answer: answer,
+                                            comment: ""
+                                        });
+                                    }
+                                });
+
+                                // Update global state
+                                setAssessmentData(prev => ({
+                                    ...prev,
+                                    responses: formattedResponses
+                                }));
+
                                 navigate('/review');
                             } else {
                                 alert(`Please answer all ${totalCount} questions. You've answered ${answeredCount}.`);
