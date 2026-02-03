@@ -1,9 +1,18 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, FileCheck, Clock, TrendingUp, Building2, Lock, Users, Network } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 
 const LandingPage = ({ config }) => {
     const navigate = useNavigate();
     const { app_title, app_subtitle, company_name, company_tagline, colors } = config;
+
+    // Warm up the backend server when the landing page loads
+    useEffect(() => {
+        fetch(API_BASE_URL)
+            .then(res => console.log("Backend wake-up ping:", res.status))
+            .catch(err => console.error("Backend wake-up failed:", err));
+    }, []);
 
     const domains = [
         { icon: Building2, title: "Governance & Risk Management", desc: "Strategy, policies, and risk assessment processes" },
