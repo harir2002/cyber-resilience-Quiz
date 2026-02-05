@@ -22,8 +22,17 @@ function App() {
   // Fetch application config from API
   useEffect(() => {
     fetch(`${API_BASE_URL}/api/config`)
-      .then(res => res.json())
-      .then(data => setConfig(data))
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        return res.json();
+      })
+      .then(data => {
+        if (data.app_title) {
+          setConfig(data);
+        } else {
+          console.error('Invalid config data:', data);
+        }
+      })
       .catch(err => console.error('Error loading config:', err));
   }, []);
 

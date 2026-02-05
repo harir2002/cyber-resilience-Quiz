@@ -12,12 +12,16 @@ const ReviewPage = ({ config, assessmentData, setAssessmentData }) => {
         setError(null);
 
         try {
+            console.log("Submitting Assessment Data:", assessmentData);
+
             // Prepare submission payload matching backend expectation (AssessmentSubmit model)
             const payload = {
                 company_info: assessmentData.companyInfo,
                 assessment_id: assessmentData.assessmentId,
                 responses: assessmentData.responses || {}
             };
+
+            console.log("Payload:", payload);
 
             const response = await fetch(`${API_BASE_URL}/api/assessment/submit`, {
                 method: 'POST',
@@ -29,7 +33,20 @@ const ReviewPage = ({ config, assessmentData, setAssessmentData }) => {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.detail || 'Submission failed');
+                console.error("Submission Error Details:", errorData);
+
+                let errorMessage = 'Submission failed';
+                if (errorData.detail) {
+                    if (Array.isArray(errorData.detail)) {
+                        errorMessage = errorData.detail.map(e => {
+                            const loc = e.loc ? e.loc.join('.') : '';
+                            return `${loc ? loc + ': ' : ''}${e.msg}`;
+                        }).join(' | ');
+                    } else {
+                        errorMessage = String(errorData.detail);
+                    }
+                }
+                throw new Error(errorMessage);
             }
 
             const data = await response.json();
@@ -54,7 +71,9 @@ const ReviewPage = ({ config, assessmentData, setAssessmentData }) => {
     let answeredCount = 0;
     if (assessmentData.responses) {
         Object.values(assessmentData.responses).forEach(section => {
-            answeredCount += Object.keys(section).length;
+            if (Array.isArray(section)) {
+                answeredCount += section.length;
+            }
         });
     }
     const isComplete = answeredCount >= totalQuestions;

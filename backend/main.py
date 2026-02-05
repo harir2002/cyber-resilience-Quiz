@@ -3,7 +3,10 @@ FastAPI Backend for Cyber Resilience Assessment Platform
 Main application entry point
 """
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+import json
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr
 from typing import List, Optional, Dict, Union
@@ -74,6 +77,14 @@ async def lifespan(app: FastAPI):
     print(f"[Stats] Questions: {stats['total_questions']}, Companies: {stats['total_companies']}, Assessments: {stats['total_assessments']}")
     print("[OK] API Ready!")
     
+    
+    # Print registered routes
+    print("\n[DEBUG] Registered Routes:")
+    for route in app.routes:
+        if hasattr(route, "path"):
+            print(f"  - {route.path} [{','.join(route.methods)}]")
+    print("----------------------------\n")
+    
     yield
     
     # Shutdown
@@ -87,6 +98,7 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+
 # CORS middleware for React frontend
 app.add_middleware(
     CORSMiddleware,
@@ -95,6 +107,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    print(f"\n[Validation Error] {json.dumps(exc.errors(), indent=2)}")
+    return JSONResponse(
+        status_code=422,
+        content={"detail": exc.errors()},
+    )
 
 # ========================================
 # PYDANTIC MODELS
@@ -374,23 +394,22 @@ class EmailRequest(BaseModel):
 from fastapi import BackgroundTasks
 
 @app.post("/api/assessment/send-email")
-async def send_report_email(request: EmailRequest):
-    """Send assessment report via email"""
+async def send_report_email(request: EmailRequest, background_tasks: BackgroundTasks):
+    """Send assessment report via email (Background Task)"""
     try:
-        success, message = send_assessment_email(
+        # Send in background to avoid blocking the UI
+        background_tasks.add_task(
+            send_assessment_email,
             request.email,
             request.company_name,
             request.results
         )
-        
-        if not success:
-            raise HTTPException(status_code=500, detail=f"Failed to send email: {message}")
             
-        return {"success": True, "message": "Report sent to email"}
+        return {"success": True, "message": "Report email has been queued"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
 
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8001, reload=True)

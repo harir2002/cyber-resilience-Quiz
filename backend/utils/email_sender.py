@@ -87,7 +87,7 @@ def send_assessment_email(to_email, company_name, results):
     # Also support RESEND_API_KEY just in case user didn't switch
     RESEND_API_KEY = os.getenv("Resend_API")
     
-    if SENDGRID_API_KEY:
+    if False and SENDGRID_API_KEY: # Force SMTP to solve 421 error
         try:
             import requests
             logger.info("Sending email using SendGrid API...")
@@ -132,7 +132,7 @@ def send_assessment_email(to_email, company_name, results):
             return False, f"SendGrid Error: {str(e)}"
 
     # 3. Check for Resend (Priority 2 - Legacy/Backup)
-    elif RESEND_API_KEY:
+    elif False and RESEND_API_KEY: # Force SMTP to solve 421 error
         try:
             import requests
             logger.info("Sending email using Resend API...")

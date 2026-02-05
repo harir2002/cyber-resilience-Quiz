@@ -8,6 +8,7 @@ const QuestionnairePage = ({ config, assessmentData, setAssessmentData }) => {
     const [error, setError] = useState(null);
     const [questionnaire, setQuestionnaire] = useState(null);
     const [responses, setResponses] = useState({});
+    const [notes, setNotes] = useState({});
 
     // Fetch questionnaire schema from backend
     useEffect(() => {
@@ -39,6 +40,13 @@ const QuestionnairePage = ({ config, assessmentData, setAssessmentData }) => {
         setResponses(prev => ({
             ...prev,
             [questionId]: answer
+        }));
+    };
+
+    const handleNoteChange = (questionId, note) => {
+        setNotes(prev => ({
+            ...prev,
+            [questionId]: note
         }));
     };
 
@@ -146,7 +154,16 @@ const QuestionnairePage = ({ config, assessmentData, setAssessmentData }) => {
         });
     });
 
-    const answeredCount = Object.keys(responses).length;
+    const answeredCount = allQuestions.filter(q => {
+        const currentAnswer = responses[q.question_id];
+        const currentNote = notes[q.question_id] || '';
+
+        const hasMainAnswer = currentAnswer !== undefined && currentAnswer !== '' && (Array.isArray(currentAnswer) ? currentAnswer.length > 0 : true);
+        const hasNote = currentNote.trim().length > 0;
+
+        return hasMainAnswer || (q.question_type !== 'text' && hasNote);
+    }).length;
+
     const totalCount = allQuestions.length;
     const progress = totalCount > 0 ? Math.round((answeredCount / totalCount) * 100) : 0;
 
@@ -209,10 +226,18 @@ const QuestionnairePage = ({ config, assessmentData, setAssessmentData }) => {
                 </div>
 
                 {/* Questions */}
+                {/* Questions */}
                 <div style={{ display: 'grid', gap: '30px' }}>
                     {allQuestions.map((q) => {
                         const currentAnswer = responses[q.question_id];
-                        const isAnswered = currentAnswer !== undefined && currentAnswer !== '';
+                        const currentNote = notes[q.question_id] || '';
+
+                        // Valid if main answer selected OR (if allowed) note is provided
+                        // For text questions, main answer is required (note field hidden)
+                        // For MCQs, note counts as "Other" answer
+                        const hasMainAnswer = currentAnswer !== undefined && currentAnswer !== '' && (Array.isArray(currentAnswer) ? currentAnswer.length > 0 : true);
+                        const hasNote = currentNote.trim().length > 0;
+                        const isAnswered = hasMainAnswer || (q.question_type !== 'text' && hasNote);
 
                         return (
                             <div
@@ -381,6 +406,29 @@ const QuestionnairePage = ({ config, assessmentData, setAssessmentData }) => {
                                             </label>
                                         ))
                                     )}
+
+                                    {/* Additional Note/Other Input - ONLY for Non-Text Questions */}
+                                    {q.question_type !== 'text' && (
+                                        <div style={{ marginTop: '15px' }}>
+                                            <textarea
+                                                placeholder="Add notes, context, or type answer if options don't match..."
+                                                value={currentNote}
+                                                onChange={(e) => handleNoteChange(q.question_id, e.target.value)}
+                                                style={{
+                                                    width: '100%',
+                                                    minHeight: '60px',
+                                                    padding: '10px 15px',
+                                                    background: '#111',
+                                                    border: '1px solid #444',
+                                                    borderRadius: '6px',
+                                                    color: '#ddd',
+                                                    fontSize: '0.9rem',
+                                                    fontFamily: 'inherit',
+                                                    resize: 'vertical'
+                                                }}
+                                            />
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         );
@@ -431,7 +479,14 @@ const QuestionnairePage = ({ config, assessmentData, setAssessmentData }) => {
                                 const formattedResponses = {};
 
                                 allQuestions.forEach(q => {
-                                    const answer = responses[q.question_id];
+                                    let answer = responses[q.question_id];
+                                    const note = notes[q.question_id] || "";
+
+                                    // If no answer selected but note exists, use note as answer
+                                    if ((!answer || (Array.isArray(answer) && answer.length === 0)) && note.trim().length > 0) {
+                                        answer = `Other: ${note}`;
+                                    }
+
                                     if (answer) {
                                         if (!formattedResponses[q.sectionName]) {
                                             formattedResponses[q.sectionName] = [];
@@ -443,7 +498,7 @@ const QuestionnairePage = ({ config, assessmentData, setAssessmentData }) => {
                                             question_text: q.question_text,
                                             question_type: q.question_type,
                                             answer: answer,
-                                            comment: ""
+                                            comment: note
                                         });
                                     }
                                 });
