@@ -244,6 +244,12 @@ const ResultsPage = () => {
                                             }}>
                                                 {answerDisplay}
                                             </div>
+                                            {q.comment && (
+                                                <div style={{ marginTop: '10px', padding: '10px', background: '#222', borderRadius: '4px', borderLeft: '3px solid #e7000b' }}>
+                                                    <div style={{ fontSize: '0.85rem', color: '#aaa', marginBottom: '4px' }}>YOUR NOTES:</div>
+                                                    <div style={{ fontSize: '0.95rem', color: '#fff', fontStyle: 'italic' }}>"{q.comment}"</div>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
